@@ -1,0 +1,202 @@
+/* UtilizationGrid.css */
+
+/* Container scroll */
+.util-grid {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch; /* smooth scrolling on iOS */
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  border-collapse: collapse;
+  box-sizing: border-box;
+}
+
+/* Header styles */
+.grid-header {
+  background: white;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  box-shadow: 0 2px 4px rgb(0 0 0 / 0.1);
+}
+
+/* Header row flex */
+.header-row {
+  display: flex;
+  align-items: center;
+  min-width: 600px; /* minimum width for horizontal scroll */
+}
+
+/* Team members header cell */
+.employee-cell {
+  width: 190px;
+  min-width: 140px;
+  padding: 10px 12px;
+  font-weight: 700;
+  border: 1px solid #fcf9f9;
+  background: #f8f9fa;
+  flex-shrink: 0;
+  white-space: nowrap;
+  box-sizing: border-box;
+  color: #222;
+  user-select: none;
+  height:60px;
+}
+
+.employee-cell.teamname {
+ background-color: #f8f9fa;
+    color: #150808;
+    border: none;
+    font-weight: 500;
+}
+
+/* Months header container */
+/* Each month header */
+.month-header {
+  min-width: 90px;
+  flex-shrink: 0;
+  height: 60px;
+  line-height: 60px;
+  background: #ffffff;
+  font-weight: 600;
+border: 1px solid #fcf9f9;
+  text-align: center;
+  box-sizing: border-box;
+  white-space: nowrap;
+  user-select: none;
+}
+
+/* Body styles */
+.grid-body {
+  display: flex;
+  flex-direction: column;
+  min-width: 600px;
+}
+
+/* Each row */
+.row {
+  display: flex;
+  align-items: center;
+  min-width: 600px;
+  border-bottom: 1px solid #eee;
+}
+
+/* Employee name cell */
+.employee-cell {
+  background: #f8f9fa;
+}
+
+/* Each cell for a month */
+.month-cell {
+  min-width: 90px;
+  height: 60px;
+  padding: 6px 4px;
+  box-sizing: border-box;
+  border: 1px solid #ddd;
+  color: #000;
+  font-weight: 600;
+  font-size: 13px;
+  text-align: center;
+  flex-shrink: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  user-select: none;
+}
+
+/* Project percent inside cell */
+.project-percent {
+  line-height: 1;
+}
+
+/* Scrollbar style for webkit */
+.util-grid::-webkit-scrollbar {
+  height: 8px;
+}
+
+.util-grid::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.util-grid::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.util-grid::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+.employee-cell.teamname button.expand-btn {
+    margin-right: 10px;
+}
+
+/* Responsive tweaks */
+
+/* Medium devices (tablets) */
+@media (max-width: 992px) {
+  .employee-cell {
+    width: 140px;
+    min-width: 120px;
+    font-size: 14px;
+    padding: 8px 10px;
+  }
+
+  .month-header,
+  .month-cell {
+    min-width: 90px;
+    font-size: 11px;
+    height: 50px;
+    line-height: 50px;
+  }
+
+  .grid-body,
+  .header-row {
+    min-width: 500px;
+  }
+}
+
+/* Small devices (phones) */
+@media (max-width: 600px) {
+  .employee-cell {
+    width: 120px;
+    min-width: 100px;
+    font-size: 12px;
+    padding: 6px 8px;
+  }
+
+  .month-header,
+  .month-cell {
+    min-width: 70px;
+    font-size: 10px;
+    height: 40px;
+    line-height: 40px;
+    padding: 0 2px;
+  }
+
+  .grid-body,
+  .header-row {
+    min-width: 420px;
+  }
+}
+
+/* Extra small devices (very small phones) */
+@media (max-width: 400px) {
+  .employee-cell {
+    width: 100px;
+    min-width: 80px;
+    font-size: 10px;
+    padding: 4px 6px;
+  }
+
+  .month-header,
+  .month-cell {
+    min-width: 60px;
+    font-size: 9px;
+    height: 35px;
+    line-height: 35px;
+  }
+
+  .grid-body,
+  .header-row {
+    min-width: 360px;
+  }
+}
