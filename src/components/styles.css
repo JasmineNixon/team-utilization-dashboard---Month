@@ -267,3 +267,14 @@ border: 1px solid #fcf9f9;
 .month-dropdown-item {
     font-size: 14px;
 }
+em.taskname {
+    font-size: 12px;
+    padding-left: 25px;
+}
+button.expand-btn {
+    background-color: navy;
+    color: #fff;
+    font-size: 16px;
+    border-radius: 15px;
+    font-weight: 700;
+}
