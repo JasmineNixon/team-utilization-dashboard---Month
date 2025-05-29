@@ -1,8 +1,25 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
+import { getUsersList ,getUsersTask } from '../Services/userService';
 import './styles.css';
 
-const UtilizationGrid = () => {
+const UtilizationGrid = () => { 
+ 
+ 
+ const [users, setUsers] = useState([]);
+
+  useEffect(() => {
+    getUsersList()
+      .then(data => {
+        setUsers(data); // Adjust if `data` has nested structure like `data.items`
+      })
+      .catch(error => {
+        console.error('Failed to load users:', error);
+      });
+  }, []);
+   
+
   const [expandedRows, setExpandedRows] = useState({});
+  const [tasksByUser, setTasksByUser] = useState({});
 
   const employees = ['John', 'Jane', 'Bob', 'Alice'];
 
@@ -45,6 +62,25 @@ const UtilizationGrid = () => {
     }));
   };
 
+  // const toggleExpand = async (user) => {
+  //   setExpandedRows(prev => ({
+  //     ...prev,
+  //     [user.name]: !prev[user.name],
+  //   }));
+
+  //   // if (!tasksByUser[user.id]) {
+  //   //   try {
+  //   //     const tasks = await getUsersTask(user.id);
+  //   //     setTasksByUser(prev => ({
+  //   //       ...prev,
+  //   //       [user.id]: tasks,
+  //   //     }));
+  //   //   } catch (err) {
+  //   //     console.error('Error fetching tasks for user:', user.name, err);
+  //   //   }
+  //   // }
+  // };
+
   return (
     <div className="util-grid">
       <div className="grid-header">
@@ -57,7 +93,7 @@ const UtilizationGrid = () => {
       </div>
 
       <div className="grid-body">
-        {employees.map((name) => (
+        {users.map((name) => (
           <React.Fragment key={name}>
             <div className="row">
               <div className="employee-cell teamname">
@@ -99,6 +135,9 @@ const UtilizationGrid = () => {
         ))}
       </div>
     </div>
+
+
+     
   );
 };
 
