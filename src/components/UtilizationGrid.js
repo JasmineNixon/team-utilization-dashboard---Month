@@ -249,7 +249,7 @@ const UtilizationGrid = () => {
     {[1, 2, 3].map((i) => (
       <div key={i} className="row expanded-row">
         <div className="employee-cell teamname">
-          <em>{`Tasks List ${name} - Detail ${i}`}</em>
+          <em className='taskname'>{`Tasks List ${name} - Detail ${i}`}</em>
         </div>
         {filteredDays.map((day, idx) => (
           <div key={idx} className="month-cell detail-cell">
