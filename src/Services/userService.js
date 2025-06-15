@@ -14,16 +14,17 @@ export const getUsersList = async () => {
   try {
     const response = await axios.get(API_URL, {
       headers: {
+         'X-Requested-With': 'XMLHttpRequest',
         Authorization: authHeader,
       },
     });
 
     // Extract names from the response
     const users = response.data?._embedded?.elements || [];
-    const userNames = users.map(user => user.name);
+    //const userNames = users.map(user => user.name);
 
-    console.log('✅ User names:', userNames);
-    return userNames; 
+    //console.log('✅ User names:', userNames);
+    return users; 
 
   } catch (error) {
     console.error('❌ Error fetching users:', error.message || error);
@@ -33,19 +34,20 @@ export const getUsersList = async () => {
 
 
 export const getUsersTask = async (userId) => {
-    const url = `http://164.68.99.129/api/v3/work_packages?filters=[{"assignee":{"operator":"=","values":["${userId}"]}}]`;
+  const url = `https://cors-anywhere.herokuapp.com/http://164.68.99.129/api/v3/work_packages?filters=[{"assignee":{"operator":"=","values":["${5}"]}}]`;
+
   try {
     const response = await axios.get(url, {
       headers: {
+         'X-Requested-With': 'XMLHttpRequest',
         Authorization: authHeader,
       },
     });
 
-    // Extract names from the response
-    const data = await response.json();
+    const data = response.data; // Axios already parses the response
     return data._embedded?.elements || [];
   } catch (error) {
-    console.error('❌ Error fetching users:', error.message || error);
+    console.error('❌ Error fetching user tasks:', error.message || error);
     throw error;
   }
 };

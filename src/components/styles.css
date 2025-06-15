@@ -28,7 +28,7 @@
 
 /* Team members header cell */
 .employee-cell {
-  width: 300px;
+  width: 400px;
   min-width: 140px;
   padding: 10px 12px;
   font-weight: 700;
@@ -40,6 +40,8 @@
   color: #222;
   user-select: none;
   height:60px;
+
+
 }
 
 .employee-cell.teamname {
@@ -83,6 +85,7 @@ border: 1px solid #fcf9f9;
 /* Employee name cell */
 .employee-cell {
   background: #f8f9fa;
+
 }
 
 /* Each cell for a month */
@@ -100,7 +103,9 @@ border: 1px solid #fcf9f9;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
-  user-select: none;
+  user-select: none; 
+   /* mayur */
+
 }
 
 /* Project percent inside cell */
@@ -200,3 +205,58 @@ border: 1px solid #fcf9f9;
     min-width: 360px;
   }
 }
+
+
+/* mayur */
+/* Collapsible child rows */
+.child-row {
+  display: flex;
+  align-items: center;
+  min-width: 600px;
+  border-bottom: 1px solid #eee;
+  transition: all 0.3s ease;
+}
+
+.child-row.hidden {
+  display: none;
+}
+
+/* Indentation for child rows */
+.child-row .employee-cell {
+  padding-left: 30px;
+  font-weight: 400;
+  background: #fefefe;
+}
+
+.expand-btn {
+  cursor: pointer;
+  background: none;
+  border: none;
+  font-size: 16px;
+  color: #333;
+}
+
+.expand-btn:hover {
+  color: #007bff;
+}
+
+.effort-text {
+  font-size: 0.75rem;
+  color: #00796b;
+  display: block;
+  text-align: center;
+}
+
+.pagination-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+  background-color: #888;
+  border-radius: 5px;
+}
+
+
+
+
+
