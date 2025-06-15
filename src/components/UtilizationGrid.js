@@ -1,44 +1,89 @@
-import React, { useState, useRef, useEffect } from 'react';
+
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { getUsersList } from '../Services/userService';
+
 import './styles.css';
 import { FaFilter } from 'react-icons/fa';
 
 const UtilizationGrid = () => {
-  const [expandedRows, setExpandedRows] = useState({});
-  const [selectedEmployee, setSelectedEmployee] = useState('');
-  const [selectedProject, setSelectedProject] = useState('');
-  const [selectedMonth, setSelectedMonth] = useState('');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
-  const [activeFilter, setActiveFilter] = useState('custom');
 
-  const [monthDropdownOpen, setMonthDropdownOpen] = useState(false);
+  const [users, setUsers] = useState([]);
+  const [expandedUserId, setExpandedUserId] = useState(null);
+  const [tasksByUser, setTasksByUser] = useState({});
+  const [days, setDays] = useState([]);
+  const [selectedStartDate, setSelectedStartDate] = useState(new Date());
 
-  const employees = ['John', 'Jane', 'Bob', 'Alice'];
-  const projects = ['Project A', 'Project B', 'Project C'];
-  const months = ['Last Month', 'This month', 'Next Month'];
-  const days = [
-    '2024-04-07', '2024-04-14', '2024-04-21', '2024-04-28',
-    '2024-05-05', '2024-05-12', '2024-05-19', '2024-05-26',
-    '2024-06-02', '2024-06-09', '2024-06-16', '2024-06-23', '2024-06-30'
-  ];
+  const [currentPage, setCurrentPage] = useState(1);
+  const usersPerPage = 10;
 
-  const utilizationData = {
-    'John': {
-      '2024-04-07': 100, '2024-04-14': 80, '2024-04-21': 60, '2024-04-28': 40, '2024-05-05': 2, '2024-05-12': 90,
-      '2024-05-19': 140, '2024-05-26': 85, '2024-06-02': 75, '2024-06-09': 50, '2024-06-16': 65, '2024-06-23': 80, '2024-06-30': 95,
-    },
-    'Jane': {
-      '2024-04-07': 60, '2024-04-14': 1, '2024-04-21': 80, '2024-04-28': 90, '2024-05-05': 120, '2024-05-12': 85,
-      '2024-05-19': 75, '2024-05-26': 65, '2024-06-02': 55, '2024-06-09': 45, '2024-06-16': 35, '2024-06-23': 25, '2024-06-30': 15,
-    },
-    'Bob': {
-      '2024-04-07': 10, '2024-04-14': 20, '2024-04-21': 30, '2024-04-28': 40, '2024-05-05': 50, '2024-05-12': 60,
-      '2024-05-19': 70, '2024-05-26': 80, '2024-06-02': 90, '2024-06-09': 160, '2024-06-16': 75, '2024-06-23': 55, '2024-06-30': 35,
-    },
-    'Alice': {
-      '2024-04-07': 95, '2024-04-14': 4, '2024-04-21': 75, '2024-04-28': 65, '2024-05-05': 55, '2024-05-12': 45,
-      '2024-05-19': 35, '2024-05-26': 25, '2024-06-02': 15, '2024-06-09': 5, '2024-06-16': 20, '2024-06-23': 30, '2024-06-30': 40,
-    },
+  useEffect(() => {
+    generateWeekStartDates(selectedStartDate);
+  }, [selectedStartDate]);
+
+  const generateWeekStartDates = (startDate) => {
+    const startOfWeek = new Date(startDate);
+    startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
+    startOfWeek.setHours(0, 0, 0, 0);
+
+    const weeks = [];
+    for (let i = -6; i <= 6; i++) {
+      const weekStart = new Date(startOfWeek);
+      weekStart.setDate(startOfWeek.getDate() + i * 7);
+      const options = { month: 'short', day: 'numeric' };
+      weeks.push(weekStart.toLocaleDateString('en-US', options));
+    }
+    setDays(weeks);
+  };
+
+  useEffect(() => {
+    getUsersList()
+      .then(setUsers)
+      .catch(err => console.error('Error loading users:', err));
+  }, []);
+
+  useEffect(() => {
+    const fetchTasksForVisibleUsers = async () => {
+      const indexOfLastUser = currentPage * usersPerPage;
+      const indexOfFirstUser = indexOfLastUser - usersPerPage;
+      const currentUsers = users.slice(indexOfFirstUser, indexOfLastUser);
+
+      for (const user of currentUsers) {
+        if (!tasksByUser[user.id]) {
+          const tasks = await fetchTasksForUser(user.id);
+          setTasksByUser(prev => ({ ...prev, [user.id]: tasks }));
+        }
+      }
+    };
+
+    if (users.length) fetchTasksForVisibleUsers();
+  }, [users, currentPage]);
+
+  const API_KEY = 'apikey';
+  const PASSWORD = '0b78127b3361cb3c7186fdc1b23bc152f905108d70a6c3e65761a86117557a5a';
+  const authHeader = 'Basic ' + btoa(`${API_KEY}:${PASSWORD}`);
+
+  const fetchTasksForUser = async (userId) => {
+    const url = `https://cors-anywhere.herokuapp.com/http://164.68.99.129/api/v3/work_packages?filters=[{"assignee":{"operator":"=","values":["${userId}"]}}]`;
+    try {
+      const res = await axios.get(url, { headers: { Authorization: authHeader } });
+      return res.data._embedded?.elements || [];
+    } catch (error) {
+      console.error(`Error fetching tasks for user ${userId}:`, error.message);
+      return [];
+    }
+  };
+
+  const toggleExpand = async (user) => {
+    const isExpanding = expandedUserId !== user.id;
+    setExpandedUserId(isExpanding ? user.id : null);
+
+    if (isExpanding && !tasksByUser[user.id]) {
+      const tasks = await fetchTasksForUser(user.id);
+      setTasksByUser(prev => ({ ...prev, [user.id]: tasks }));
+    }
+
+
   };
 
   const getCellColor = (percent) => {
@@ -48,11 +93,105 @@ const UtilizationGrid = () => {
     return '#f443368c';
   };
 
-  const toggleExpand = (name) => {
-    setExpandedRows((prev) => ({
-      ...prev,
-      [name]: !prev[name],
-    }));
+  const getWorkingDays = (start, end) => {
+    let count = 0;
+    const current = new Date(start);
+    while (current <= end) {
+      const day = current.getDay();
+      if (day !== 0 && day !== 6) count++;
+      current.setDate(current.getDate() + 1);
+    }
+    return count;
+  };
+
+  const parseISO8601DurationToHours = (duration) => {
+    const match = duration.match(/P(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?)?/);
+    if (!match) return 0;
+    const days = parseInt(match[1]) || 0;
+    const hours = parseInt(match[2]) || 0;
+    const minutes = parseInt(match[3]) || 0;
+    return days * 8 + hours + minutes / 60;
+  };
+
+  const calculateEffortThisWeek = (task, weekStart, weekEnd) => {
+    const startDate = new Date(task.startDate || task.start);
+    const endDate = new Date(task.dueDate || task.end);
+
+    const estimatedHours = typeof task.estimatedTime === 'string'
+      ? parseISO8601DurationToHours(task.estimatedTime)
+      : task.estimatedTime || 0;
+
+    if (startDate > weekEnd || endDate < weekStart || !estimatedHours) return 0;
+
+    const totalWorkingDays = getWorkingDays(startDate, endDate);
+    if (totalWorkingDays === 0) return 0;
+
+    const overlapStart = new Date(Math.max(startDate, weekStart));
+    const overlapEnd = new Date(Math.min(endDate, weekEnd));
+    const overlapDays = getWorkingDays(overlapStart, overlapEnd);
+
+    const effort = ((estimatedHours / totalWorkingDays) * overlapDays).toFixed(1);
+    return parseFloat(effort);
+  };
+
+  const mapTasksToWeeks = (tasks) => {
+    const weekMap = {};
+    days.forEach(day => (weekMap[day] = []));
+
+    tasks.forEach(task => {
+      const start = new Date(task.startDate || task.start);
+      const end = new Date(task.dueDate || task.end);
+
+      days.forEach(day => {
+        const [month, date] = day.split(' ');
+        const weekStart = new Date(`${month} ${date}, ${new Date().getFullYear()}`);
+        const weekEnd = new Date(weekStart);
+        weekEnd.setDate(weekStart.getDate() + 6);
+
+        if ((start <= weekEnd && end >= weekStart)) {
+          weekMap[day].push(task);
+        }
+      });
+    });
+
+    return weekMap;
+  };
+
+  const calculateUtilization = (userId, day) => {
+    const tasks = tasksByUser[userId] || [];
+    const weekMap = mapTasksToWeeks(tasks);
+    const count = weekMap[day]?.length || 0;
+    const percent = Math.min((count / 5) * 100, 100);
+    return Math.round(percent);
+  };
+   
+
+
+  //pagination 
+  
+  const indexOfLastUser = currentPage * usersPerPage;
+  const indexOfFirstUser = indexOfLastUser - usersPerPage;
+  const currentUsers = users.slice(indexOfFirstUser, indexOfLastUser);
+  const totalPages = Math.ceil(users.length / usersPerPage);
+
+  const nextPage = () => {
+    if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+  };
+
+  const prevPage = () => {
+    if (currentPage > 1) setCurrentPage(currentPage - 1);
+  };
+
+  const currentPageNavigation = ()=>{
+
+    if(currentPage !== 0)
+      setCurrentPage(1) 
+  }
+
+  const handleWeekNavigation = (direction) => {
+    const newDate = new Date(selectedStartDate);
+    newDate.setDate(newDate.getDate() + direction * 7);
+    setSelectedStartDate(newDate);
   };
 
   const handleEmployeeChange = (e) => setSelectedEmployee(e.target.value);
@@ -117,6 +256,13 @@ const UtilizationGrid = () => {
 
   return (
     <div className="util-grid">
+
+      <div className="week-filter">
+        <button onClick={() => handleWeekNavigation(-1)}>← Previous Weeks</button>
+        <button onClick={() => handleWeekNavigation(1)}>Next Weeks →</button>
+      </div>
+
+
       {/* Filters and Legend */}
       <div className="filters-legend">
         <div className="filters">
@@ -205,19 +351,81 @@ const UtilizationGrid = () => {
       </div>
 
       {/* Table Header */}
-      <div className="grid-header">
-        <div className="header-row">
-          <div className="employee-cell teammember">Team Member</div>
-          {filteredDays.map((day, index) => (
-            <div key={index} className="month-header">
-              {new Date(day).toLocaleDateString('en-GB', { month: 'short', day: 'numeric' })}
-            </div>
-          ))}
-        </div>
+
+  
+
+        {currentUsers.map(user => {
+          const isExpanded = expandedUserId === user.id;
+          const tasks = tasksByUser[user.id] || [];
+          const weekMap = mapTasksToWeeks(tasks);
+
+          const taskRows = isExpanded
+            ? tasks.map(task => {
+              const taskWeeks = days.filter(day =>
+                weekMap[day]?.some(t => t.id === task.id)
+              );
+              return taskWeeks.length > 0 ? { task, taskWeeks } : null;
+            }).filter(Boolean)
+            : [];
+
+          return (
+            <React.Fragment key={user.id}>
+              <div className="row">
+                <div className="employee-cell teamname">
+                  <button className="expand-btn" onClick={() => toggleExpand(user)}>
+                    {isExpanded ? '−' : '+'}
+                  </button>
+                  {user.name}
+                </div>
+                {days.map((day, idx) => {
+                  const percent = calculateUtilization(user.id, day);
+                  return (
+                    <div
+                      key={idx}
+                      className="month-cell"
+                      style={{ backgroundColor: getCellColor(percent) }}
+                    >
+                      <span className="project-percent">{percent}%</span>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {isExpanded && taskRows.map(({ task, taskWeeks }) => (
+                <div className="row task-row" key={task.id}>
+                  <div className="employee-cell teamname task-cell">
+                    <small>{task.subject}</small>
+                  </div>
+                  {days.map((day, idx) => {
+                    const [month, date] = day.split(' ');
+                    const weekStart = new Date(`${month} ${date}, ${new Date().getFullYear()}`);
+                    const weekEnd = new Date(weekStart);
+                    weekEnd.setDate(weekStart.getDate() + 6);
+
+                    const effort = calculateEffortThisWeek(task, weekStart, weekEnd);
+                    return (
+                      <div
+                        key={idx}
+                        className="month-cell task-cell"
+                        style={{ backgroundColor: effort > 0 ? '#e0f7fa' : 'transparent' }}
+                      >
+                        {effort > 0 && <span className="effort-text">{effort}h</span>}
+                      </div>
+                    );
+                  })}
+                </div>
+              ))}
+            </React.Fragment>
+          );
+        })}
       </div>
 
-      {/* Table Body */}
-      <div className="grid-body">
+      <div className="pagination-controls">
+        <button onClick={prevPage} disabled={currentPage === 1}>Previous</button>
+        <span style={{ margin: '0 10px' }}>Page {currentPage} of {totalPages}</span>
+         <button onClick={currentPageNavigation}>Current Page</button>
+        <button onClick={nextPage} disabled={currentPage === totalPages}>Next</button>
+
         {filteredEmployees.map((name) => (
           <React.Fragment key={name}>
             <div className="row">
@@ -262,6 +470,7 @@ const UtilizationGrid = () => {
 )}
           </React.Fragment>
         ))}
+
       </div>
 
       
