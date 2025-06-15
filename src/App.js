@@ -41,7 +41,7 @@ function App() {
   return (
     <div style={{ padding: '10px' }}>
       <h2>Team Weekly Utilization Dashboard</h2>
-      <div style={{ overflowX: 'auto', maxWidth: '100vw', border: '1px solid #ccc', borderRadius: 4 }}>
+      <div style={{ overflowX: 'auto', maxWidth: '100vw',borderRadius: 4 }}>
         <UtilizationGrid data={sampleData} weeks={weekHeaders} />
       </div>
     </div>
