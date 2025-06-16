@@ -192,6 +192,7 @@ const UtilizationGrid = () => {
     <div className="util-grid">
       <div className="week-filter">
         <button onClick={() => handleWeekNavigation(-1)}>← Previous Weeks</button>
+         <button onClick={currentPageNavigation}>Current Page</button>
         <button onClick={() => handleWeekNavigation(1)}>Next Weeks →</button>
       </div>
 
